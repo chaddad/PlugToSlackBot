@@ -2,7 +2,8 @@
 
 var debug = true;
 
-var slackUrl = "https://your.slack.com/webhook";
+// set this to your slack webhook URL prior to calling sb.setup()
+//var slackUrl = "https://your.slack.com/webhook";
 
 var SlackBot = function () {
     "use strict";
