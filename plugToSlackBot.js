@@ -1,18 +1,12 @@
-// PlugToSlackBot v0.2
-
-// TODO: send POST to Slack
-/* $.ajax({
-  type: 'post',
-  url: 'https://hooks.slack.com/services/[stuff]',
-  data: '{"text": "This is a test"}',  
-  dataType: 'json'
-}); */
+// PlugToSlackBot v0.5
 
 var debug = true;
 
+var slackUrl = "https://your.slack.com/webhook";
+
 var SlackBot = function () {
     "use strict";
-    var b = this, loaded = false, sendData = false, nextTimeout, currentData, newData, setup, updateTimeout;
+    var b = this, loaded = false, nextTimeout, currentData, newData, setup, updateTimeout;
     
     this.pollPlug = function () {
         return {
@@ -25,6 +19,9 @@ var SlackBot = function () {
         this.currentData = this.pollPlug();
         this.nextTimeout = API.getTimeRemaining() + 5;
         this.updateTimeout = this.resetTimeout();
+        this.sendUpdate();
+        
+        //this.getUpdate();
     };
     
     this.checkInit = function () {
@@ -40,7 +37,7 @@ var SlackBot = function () {
             clearInterval(this.setup);
             
             if (debug) {
-                console.log("slackBot setup");
+                console.log("slackBot loaded - currentData and nextTimeout are");
                 console.info(this.currentData);
                 console.info(this.nextTimeout);
             }
@@ -63,18 +60,19 @@ var SlackBot = function () {
             updated = true;
             this.nextTimeout = API.getTimeRemaining() + 5;
             
-            if (debug) { console.log("data doesn't match, refresh in " + this.nextTimeout); }
+            if (debug) { console.log("SUCCESS - data doesn't match, refresh in " + this.nextTimeout); }
         } else {
             // data isn't fresh, reset updateTimeout
             
-            if (debug) { console.log("data matches, refresh in 5s"); }
+            if (debug) { console.log("FAIL - data still matches, refresh in 5s"); }
             this.nextTimeout = 5;
         }
          
         this.updateTimeout = this.resetTimeout();
         
-        if (sendData && updated) {
-            this.sendUpdate(currentData);
+        if (debug) { console.log("updated: " + updated); }
+        if (updated) {
+            this.sendUpdate();
         }
     };
     
@@ -82,9 +80,15 @@ var SlackBot = function () {
         return setTimeout(function () { b.getUpdate(); }, this.nextTimeout * 1000);
     };
     
-    this.sendUpdate = function (data) {
-        // TODO: send data to Slack
+    this.sendUpdate = function () {
         //DJ.username, Media.author, Media.title
+        var t = this.currentData.DJ.username + " is spinning " + this.currentData.Media.title + " by " + this.currentData.Media.author, request = new XMLHttpRequest();
+        
+        if (debug) { console.log(t); }
+        
+        if (debug) { console.log("sending request to slack"); }
+        request.open('post', slackUrl, true);
+        request.send('{"text": "' + t + '"}');
     };
 };
 
