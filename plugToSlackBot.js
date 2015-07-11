@@ -16,7 +16,7 @@
 // TODO: send POST to Slack
 /* $.ajax({
   type: 'post',
-  url: 'https://hooks.slack.com/services/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',
+  url: 'https://hooks.slack.com/services/[stuff]',
   data: '{"text": "This is a test"}',  
   dataType: 'json'
 }); */
