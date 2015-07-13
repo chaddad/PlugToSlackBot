@@ -82,7 +82,7 @@ var SlackBot = function () {
     
     this.sendUpdate = function () {
         //DJ.username, Media.author, Media.title
-        var t = this.currentData.DJ.username + " is spinning " + this.currentData.Media.title + " by " + this.currentData.Media.author, request = new XMLHttpRequest();
+        var t = "> " + this.currentData.DJ.username + " is spinning " + this.currentData.Media.title + " by " + this.currentData.Media.author, request = new XMLHttpRequest();
         
         if (debug) { console.log(t); }
         
