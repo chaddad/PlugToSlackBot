@@ -64,6 +64,17 @@ var SlackBot = function () {
         }
     };
 
+
+    //check if a weekday
+    this.checkWeekday = function(){
+        var today = new Date();
+        if(today.getDay() === 0 || today.getDay() === 6){
+            return false;
+        }else{
+            return true;
+        }
+    };
+
     this.getUpdate = function () {
         this.newData = this.pollPlug();
 
@@ -91,7 +102,7 @@ var SlackBot = function () {
         this.updateTimeout = this.resetTimeout();
 
         if (debug) { console.log("updated: " + updated); }
-        if (updated && this.validTime ) {
+        if (updated && this.validTime && this.checkWeekday) {
             this.sendUpdate();
         }
     };
