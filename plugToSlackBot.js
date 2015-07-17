@@ -1,6 +1,6 @@
-// PlugToSlackBot v0.5
+// PlugToSlackBot v0.6
 
-var debug = true;
+var debug = true, skipTimecheck = false;
 
 var slackUrl = "https://your.slack.com/webhook";
 
@@ -41,36 +41,35 @@ var SlackBot = function () {
                 console.info(this.currentData);
                 console.info(this.nextTimeout);
             }
-
+        }
     };
 
-    this.validTime = function(){    //setting window for no messages
-        var tooEarlyHour = 8, tooEarlyMinute = 30; //8:30 AM
-        var tooLateHour = 17, tooLateMinute = 30;  //5:30 PM
+    this.validTime = function () {
+        if (skipTimecheck) { return skipTimecheck; }
+        
+        //setting window for no messages - will not send unless between 8:30a and 5:30p
+        var tooEarlyHour = 8, tooEarlyMinute = 30, tooLateHour = 17, tooLateMinute = 30, tooEarlyObject = new Date(), tooLateObject = new Date(), today = new Date();
 
-        var tooEarlyObject = new Date();
-        tooEarlyObject.setHours(tooEarlyHour,tooEarlyMinute);
+        tooEarlyObject.setHours(tooEarlyHour, tooEarlyMinute);
+        tooLateObject.setHours(tooLateHour, tooLateMinute);
 
-        var tooLateObject = new Date();
-        tooLateObject.setHours(tooLateHour,tooLateMinute);
-
-
-        var today = new Date();
         //between work hours then return true
-        if(tooEarlyObject <= today && tooLateObject >= today){
+        if (tooEarlyObject <= today && tooLateObject >= today) {
             return true;
-        }else{
+        } else {
             return false;
         }
     };
 
 
     //check if a weekday
-    this.checkWeekday = function(){
+    this.checkWeekday = function () {
+        if (skipTimecheck) { return skipTimecheck; }
+        
         var today = new Date();
-        if(today.getDay() === 0 || today.getDay() === 6){
+        if (today.getDay() === 0 || today.getDay() === 6) {
             return false;
-        }else{
+        } else {
             return true;
         }
     };
@@ -101,8 +100,13 @@ var SlackBot = function () {
 
         this.updateTimeout = this.resetTimeout();
 
-        if (debug) { console.log("updated: " + updated); }
-        if (updated && this.validTime && this.checkWeekday) {
+        if (debug) {
+            console.log("updated: " + updated);
+            console.log("skipTimecheck: " + skipTimecheck);
+            console.log("validTime: " + this.validTime());
+            console.log("checkWeekday: " + this.checkWeekday());
+        }
+        if (updated && this.validTime() && this.checkWeekday()) {
             this.sendUpdate();
         }
     };
