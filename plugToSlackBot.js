@@ -98,10 +98,10 @@ var SlackBot = function () {
 
         if (debug) {
             console.log("updated: " + updated);
-            console.log("validTime: " + this.validTime);
-            console.log("checkWeekday: " + this.checkWeekday);
+            console.log("validTime: " + this.validTime());
+            console.log("checkWeekday: " + this.checkWeekday());
         }
-        if (updated && this.validTime && this.checkWeekday) {
+        if (updated && this.validTime() && this.checkWeekday()) {
             this.sendUpdate();
         }
     };
