@@ -13,6 +13,9 @@ Current Release: v0.6
  
 TODOs:
 
+* add anti-spam catch
+ * log time of "last send to Slack", and wait for an elapsed period before resending
+* check out TypeScript?
 * add interface buttons
   * toggle debug
   * toggle "afterhours" throttling
