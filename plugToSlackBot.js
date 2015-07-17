@@ -1,6 +1,6 @@
-// PlugToSlackBot v0.5
+// PlugToSlackBot v0.6
 
-var debug = true;
+var debug = true, skipTimecheck = false;
 
 var slackUrl = "https://your.slack.com/webhook";
 
@@ -44,11 +44,13 @@ var SlackBot = function () {
         }
     };
 
-    this.validTime = function () {    //setting window for no messages
+    this.validTime = function () {
+        if (skipTimecheck) { return skipTimecheck; }
+        
+        //setting window for no messages - will not send unless between 8:30a and 5:30p
         var tooEarlyHour = 8, tooEarlyMinute = 30, tooLateHour = 17, tooLateMinute = 30, tooEarlyObject = new Date(), tooLateObject = new Date(), today = new Date();
 
         tooEarlyObject.setHours(tooEarlyHour, tooEarlyMinute);
-        
         tooLateObject.setHours(tooLateHour, tooLateMinute);
 
         //between work hours then return true
@@ -62,6 +64,8 @@ var SlackBot = function () {
 
     //check if a weekday
     this.checkWeekday = function () {
+        if (skipTimecheck) { return skipTimecheck; }
+        
         var today = new Date();
         if (today.getDay() === 0 || today.getDay() === 6) {
             return false;
@@ -98,6 +102,7 @@ var SlackBot = function () {
 
         if (debug) {
             console.log("updated: " + updated);
+            console.log("skipTimecheck: " + skipTimecheck);
             console.log("validTime: " + this.validTime());
             console.log("checkWeekday: " + this.checkWeekday());
         }
