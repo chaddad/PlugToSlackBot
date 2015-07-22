@@ -1,21 +1,32 @@
 var debug = true, skipTimecheck = false;
+var offsetSeconds = 5;
 var slackUrl = "https://your.slack.com/webhook";
-var SlackBot = function () {
-    "use strict";
-    var b = this, loaded = false, nextTimeout, currentData, newData, setup, updateTimeout;
-    this.pollPlug = function () {
-        return {
-            DJ: API.getDJ(),
-            Media: API.getMedia()
-        };
+var DJ = (function () {
+    function DJ() {
+    }
+    return DJ;
+})();
+var Media = (function () {
+    function Media() {
+    }
+    return Media;
+})();
+var PlugData = (function () {
+    function PlugData(DJ, Media) {
+        this.DJ = DJ;
+        this.Media = Media;
+    }
+    return PlugData;
+})();
+var SlackBot = (function () {
+    function SlackBot() {
+        this.sb = this;
+        this.setup = setInterval(function () { this.sb.checkInitialize(); }, 5000);
+    }
+    SlackBot.prototype.pollPlug = function () {
+        return new PlugData(API.getDJ(), API.getMedia());
     };
-    this.init = function () {
-        this.currentData = this.pollPlug();
-        this.nextTimeout = API.getTimeRemaining() + 5;
-        this.updateTimeout = this.resetTimeout();
-        this.sendUpdate();
-    };
-    this.checkInit = function () {
+    SlackBot.prototype.checkInitialize = function () {
         if (debug) {
             console.log("checking slackbot...");
         }
@@ -23,7 +34,7 @@ var SlackBot = function () {
             if (debug) {
                 console.log("loading slackbot");
             }
-            this.init();
+            this.initialize();
             this.loaded = true;
             clearInterval(this.setup);
             if (debug) {
@@ -33,11 +44,19 @@ var SlackBot = function () {
             }
         }
     };
-    this.validTime = function () {
+    SlackBot.prototype.initialize = function () {
+        this.currentData = this.pollPlug();
+        this.nextTimeout = API.getTimeRemaining() + offsetSeconds;
+        this.updateTimeout = this.resetTimeout();
+        this.sendUpdate();
+    };
+    SlackBot.prototype.validTime = function () {
         if (skipTimecheck) {
             return skipTimecheck;
         }
-        var tooEarlyHour = 8, tooEarlyMinute = 30, tooLateHour = 17, tooLateMinute = 30, tooEarlyObject = new Date(), tooLateObject = new Date(), today = new Date();
+        var tooEarlyHour = 8, tooEarlyMinute = 30;
+        var tooLateHour = 17, tooLateMinute = 30;
+        var tooEarlyObject = new Date(), tooLateObject = new Date(), today = new Date();
         tooEarlyObject.setHours(tooEarlyHour, tooEarlyMinute);
         tooLateObject.setHours(tooLateHour, tooLateMinute);
         if (tooEarlyObject <= today && tooLateObject >= today) {
@@ -47,7 +66,7 @@ var SlackBot = function () {
             return false;
         }
     };
-    this.checkWeekday = function () {
+    SlackBot.prototype.checkWeekday = function () {
         if (skipTimecheck) {
             return skipTimecheck;
         }
@@ -59,7 +78,7 @@ var SlackBot = function () {
             return true;
         }
     };
-    this.getUpdate = function () {
+    SlackBot.prototype.getUpdate = function () {
         this.newData = this.pollPlug();
         if (debug) {
             console.log("getting update from plug");
@@ -69,16 +88,16 @@ var SlackBot = function () {
         if (this.currentData !== this.newData) {
             this.currentData = this.newData;
             updated = true;
-            this.nextTimeout = API.getTimeRemaining() + 5;
+            this.nextTimeout = API.getTimeRemaining() + offsetSeconds;
             if (debug) {
                 console.log("SUCCESS - data doesn't match, refresh in " + this.nextTimeout);
             }
         }
         else {
             if (debug) {
-                console.log("FAIL - data still matches, refresh in 5s");
+                console.log("FAIL - data still matches, refresh in " + offsetSeconds + "s");
             }
-            this.nextTimeout = 5;
+            this.nextTimeout = offsetSeconds;
         }
         this.updateTimeout = this.resetTimeout();
         if (debug) {
@@ -91,11 +110,13 @@ var SlackBot = function () {
             this.sendUpdate();
         }
     };
-    this.resetTimeout = function () {
-        return setTimeout(function () { b.getUpdate(); }, this.nextTimeout * 1000);
+    SlackBot.prototype.resetTimeout = function () {
+        return setTimeout(function () { this.sb.getUpdate(); }, this.nextTimeout * 1000);
     };
-    this.sendUpdate = function () {
-        var t = "> " + this.currentData.DJ.username + " is spinning " + this.currentData.Media.title + " by " + this.currentData.Media.author, request = new XMLHttpRequest();
+    ;
+    SlackBot.prototype.sendUpdate = function () {
+        var t = "> " + this.currentData.DJ.username + " is spinning " + this.currentData.Media.title + " by " + this.currentData.Media.author;
+        var request = new XMLHttpRequest();
         if (debug) {
             console.log(t);
         }
@@ -105,6 +126,6 @@ var SlackBot = function () {
         request.open('post', slackUrl, true);
         request.send('{"text": "' + t + '"}');
     };
-};
+    return SlackBot;
+})();
 var sb = new SlackBot();
-sb.setup = setInterval(function () { sb.checkInit(); }, 5000);
